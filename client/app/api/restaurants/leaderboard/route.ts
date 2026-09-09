@@ -7,6 +7,8 @@ import type {
   LeaderboardSort,
 } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+
 function isLeaderboardSort(
   value: string
 ): value is LeaderboardSort {
