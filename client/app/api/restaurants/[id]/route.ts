@@ -2,22 +2,50 @@ import { NextResponse } from 'next/server';
 import { pool } from '@/db/pool';
 import { handleError } from '@/lib/errors';
 import { toRestaurant } from '@/lib/types';
+import {
+  parseRestaurantId,
+  validateRestaurantInput,
+} from '@/lib/restaurantValidation';
 
 type Params = { params: { id: string } };
 
 /**
+ * Create the standard 404 response used by all three handlers.
+ */
+function notFoundResponse() {
+  return NextResponse.json(
+    { error: 'Restaurant not found' },
+    { status: 404 }
+  );
+}
+
+/**
  * GET /api/restaurants/:id
- * Returns a single restaurant, or 404 if it doesn't exist.
+ * Returns one restaurant, or 404 if it does not exist.
  */
 export async function GET(_req: Request, { params }: Params) {
   try {
+    const id = parseRestaurantId(params.id);
+
+    if (id === null) {
+      return notFoundResponse();
+    }
+
     const { rows } = await pool.query(
-      'SELECT * FROM restaurants WHERE id = $1',
-      [params.id]
+      `SELECT
+         id,
+         name,
+         cuisine,
+         address,
+         rating,
+         created_at AS "createdAt"
+       FROM restaurants
+       WHERE id = $1`,
+      [id]
     );
 
     if (rows.length === 0) {
-      return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
+      return notFoundResponse();
     }
 
     return NextResponse.json(toRestaurant(rows[0]));
@@ -28,26 +56,76 @@ export async function GET(_req: Request, { params }: Params) {
 
 /**
  * PUT /api/restaurants/:id
- * Update an existing restaurant.
- *
- * TODO (A2): implement. Update the row matching :id and return the updated
- * record (or 404 if it doesn't exist). Validate the body the same way POST does.
+ * Updates and returns an existing restaurant.
  */
-export async function PUT(_req: Request, _ctx: Params) {
-  return NextResponse.json({ error: 'Not implemented' }, { status: 501 });
+export async function PUT(req: Request, { params }: Params) {
+  try {
+    const id = parseRestaurantId(params.id);
+
+    if (id === null) {
+      return notFoundResponse();
+    }
+
+    const body: unknown = await req.json();
+    const restaurant = validateRestaurantInput(body);
+
+    const { rows } = await pool.query(
+      `UPDATE restaurants
+       SET
+         name = $1,
+         cuisine = $2,
+         address = $3,
+         rating = $4
+       WHERE id = $5
+       RETURNING
+         id,
+         name,
+         cuisine,
+         address,
+         rating,
+         created_at AS "createdAt"`,
+      [
+        restaurant.name,
+        restaurant.cuisine,
+        restaurant.address,
+        restaurant.rating,
+        id,
+      ]
+    );
+
+    if (rows.length === 0) {
+      return notFoundResponse();
+    }
+
+    return NextResponse.json(toRestaurant(rows[0]));
+  } catch (err) {
+    return handleError(err);
+  }
 }
 
 /**
  * DELETE /api/restaurants/:id
- * Delete a restaurant.
- *
- * TODO (A2): implement. Delete the row matching :id and return 204 (or 404
- * if it doesn't exist).
- *
- * Worth noticing: the migration already made a call about what happens to that
- * restaurant's visits. Go read it. If you disagree with it, say so in your
- * write-up.
+ * Deletes a restaurant and returns an empty 204 response.
  */
-export async function DELETE(_req: Request, _ctx: Params) {
-  return NextResponse.json({ error: 'Not implemented' }, { status: 501 });
+export async function DELETE(_req: Request, { params }: Params) {
+  try {
+    const id = parseRestaurantId(params.id);
+
+    if (id === null) {
+      return notFoundResponse();
+    }
+
+    const result = await pool.query(
+      'DELETE FROM restaurants WHERE id = $1',
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return notFoundResponse();
+    }
+
+    return new NextResponse(null, { status: 204 });
+  } catch (err) {
+    return handleError(err);
+  }
 }

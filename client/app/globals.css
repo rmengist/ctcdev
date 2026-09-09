@@ -7,5 +7,57 @@
 }
 
 body {
-  @apply bg-gray-50 text-gray-900;
+  min-height: 100vh;
+  color: #172554;
+  font-family:
+    "Trebuchet MS",
+    "Avenir Next",
+    Avenir,
+    Arial,
+    sans-serif;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(186, 230, 253, 0.75),
+      transparent 32rem
+    ),
+    linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
+}
+
+.font-display {
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+  letter-spacing: -0.02em;
+}
+
+@layer components {
+  .blue-card {
+    @apply rounded-3xl border border-blue-100 bg-white/90 p-6 shadow-lg shadow-blue-100/60;
+  }
+
+  .section-label {
+    @apply mb-1 text-xs font-bold uppercase tracking-[0.18em] text-sky-600;
+  }
+
+  .form-label {
+    @apply mb-1.5 block text-sm font-semibold text-blue-950;
+  }
+
+  .form-input {
+    @apply w-full rounded-xl border border-blue-200 bg-blue-50/40 px-3 py-2.5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100;
+  }
+
+  .primary-button {
+    @apply rounded-xl bg-blue-700 px-5 py-2.5 font-semibold text-white shadow-md shadow-blue-200 transition hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .secondary-button {
+    @apply rounded-xl border border-blue-200 bg-white px-4 py-2 font-semibold text-blue-700 transition hover:border-blue-400 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-100;
+  }
+
+  .status-message {
+    @apply rounded-xl bg-sky-50 px-3 py-2 text-sm font-medium text-blue-800;
+  }
 }

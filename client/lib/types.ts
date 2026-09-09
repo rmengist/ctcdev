@@ -47,6 +47,23 @@ export interface Visit {
   createdAt: string;
 }
 
+export type LeaderboardSort =
+  | 'visits'
+  | 'average-spend'
+  | 'rating';
+
+export interface LeaderboardEntry {
+  restaurantId: number;
+  name: string;
+  value: number | null;
+}
+
+export interface LeaderboardResponse {
+  sort: LeaderboardSort;
+  label: string;
+  entries: LeaderboardEntry[];
+}
+
 // --- row mappers -------------------------------------------------------------
 
 /** NUMERIC -> number, preserving null. */
